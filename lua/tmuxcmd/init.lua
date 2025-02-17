@@ -1,9 +1,8 @@
-local Window = require("cmder.window")
+local Window = require("tmuxcmd.window")
 
 local M = {}
 
-function M.setup()
-end
+function M.setup() end
 
 function M.openMainMenu()
   local options = {
@@ -22,16 +21,19 @@ function M.openMainMenu()
   Window.createTelescopeWindow(options, select_current_line, nil, "Available Commands")
 end
 
+local function executeCommand(command)
+  vim.fn.system('tmux send-keys -t scratch "' .. command .. '" ^M')
+end
 function M.executeCommand(command)
   if command == "Build and Test" then
-    vim.fn.system("tmux send-keys -t scratch \"dotnet build --interactive && dotnet test\" ^M")
+    executeCommand("dotnet build --interactive && dotnet test")
   elseif command == "Build with only errors" then
-    vim.fn.system("tmux send-keys -t scratch \"dotnet build /property:WarningLevel=0\" ^M")
+    executeCommand("dotnet build /property:WarningLevel=0")
   end
   vim.fn.system("tmux select-window -t scratch")
 end
 
-vim.api.nvim_create_user_command("Cmder", function()
+vim.api.nvim_create_user_command("Tmuxcmd", function()
   M.openMainMenu()
 end, { nargs = "*", desc = "Cmder plugin" })
 
