@@ -2,8 +2,7 @@ local Window = require("tmuxcmd.window")
 
 local M = {}
 
-function M.setup()
-end
+function M.setup() end
 
 function M.openMainMenu()
   local options = {
