@@ -6,7 +6,7 @@ function M.setup(_) end
 
 ---@type table<string, table<string, string>>
 local commands = {
-  csharp = {
+  cs = {
     ["Build with only errors"] = "dotnet build /property:WarningLevel=0",
     ["Build and Test"] = "dotnet build --interactive && dotnet test",
   },
