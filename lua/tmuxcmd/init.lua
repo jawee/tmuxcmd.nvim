@@ -2,39 +2,62 @@ local Window = require("tmuxcmd.window")
 
 local M = {}
 
-function M.setup() end
+function M.setup(_) end
+
+---@type table<string, table<string, string>>
+local commands = {
+  csharp = {
+    ["Build with only errors"] = "dotnet build /property:WarningLevel=0",
+    ["Build and Test"] = "dotnet build --interactive && dotnet test",
+  },
+  go = {
+    ["Test"] = "go test ./...",
+    ["Generate coverage"] = "make test-coverage",
+  },
+  lua = {
+    ["LuaTest"] = "ls",
+  },
+}
 
 function M.openMainMenu()
-  local options = {
-    "Build with only errors",
-    "Build and Test",
-  }
+  local filetype = vim.bo.filetype
+  local options = commands[filetype] or {}
+
+  local selections = { "Open in VSCode" }
+  for k in pairs(options) do
+    table.insert(selections, k)
+  end
 
   ---@param row integer
   local function select_current_line(row)
-    local choice = options[row]
+    local choice = selections[row]
     if choice then
       M.executeCommand(choice)
     end
   end
 
-  Window.createTelescopeWindow(options, select_current_line, nil, "Available Commands")
+  Window.createTelescopeWindow(selections, select_current_line, nil, "Available Commands")
 end
 
 local function executeCommand(command)
   vim.fn.system('tmux send-keys -t scratch "' .. command .. '" ^M')
 end
+
 function M.executeCommand(command)
-  if command == "Build and Test" then
-    executeCommand("dotnet build --interactive && dotnet test")
-  elseif command == "Build with only errors" then
-    executeCommand("dotnet build /property:WarningLevel=0")
+  if command == "Open in VSCode" then
+    local cmd = "code ."
+    executeCommand(cmd)
+    return
   end
+  local filetype = vim.bo.filetype
+  local cmd = commands[filetype][command]
+
+  executeCommand(cmd)
   vim.fn.system("tmux select-window -t scratch")
 end
 
 vim.api.nvim_create_user_command("Tmuxcmd", function()
   M.openMainMenu()
-end, { nargs = "*", desc = "Cmder plugin" })
+end, { nargs = "*", desc = "Tmuxcmd plugin" })
 
 return M
